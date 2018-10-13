@@ -1,5 +1,5 @@
 import numpy as np
-def load_data_train(path_dataset="train.csv",sub_sample=True, add_outlier=False):
+def load_data(path_dataset="train.csv",sub_sample=True, add_outlier=False):
     """Load data and convert it to the metrics system."""
    
     data = np.genfromtxt(
