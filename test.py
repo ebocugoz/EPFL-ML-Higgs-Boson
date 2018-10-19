@@ -1,5 +1,6 @@
 import numpy as np
 from implementations import *
+
 def build_k_indices(y, k_fold, seed):
     """build k indices for k-fold."""
     num_row = y.shape[0]
