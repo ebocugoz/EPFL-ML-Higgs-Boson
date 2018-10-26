@@ -159,6 +159,56 @@ def ridge_regression(y, tx, lambda_):
     
     return (w, loss)
 
+def ridge_regression_demo(x, y, degree, ratio, seed):
+    """ridge regression demo."""
+    # define parameter
+    lambdas = np.logspace(-10, 0, 50)
+    # split data
+    x_tr, x_te, y_tr, y_te = split_data(x, y, ratio, seed)
+    # form tx
+    tx_tr = build_poly(x_tr, degree)
+    tx_te = build_poly(x_te, degree)
+
+    # ridge regression with different lambda
+    rmse_tr = []
+    rmse_te = []
+    for ind, lambda_ in enumerate(lambdas):
+        # ridge regression
+        weight, loss = ridge_regression(y_tr, tx_tr, lambda_)
+        rmse_tr.append(np.sqrt(2 * compute_loss(y_tr, tx_tr, weight)))
+        rmse_te.append(np.sqrt(2 * compute_loss(y_te, tx_te, weight)))
+
+        print("proportion={p}, degree={d}, lambda={l:.3f}, Training RMSE={tr:.3f}, Testing RMSE={te:.3f}".format(
+               p=ratio, d=degree, l=lambda_, tr=rmse_tr[ind], te=rmse_te[ind]))
+    plot_train_test(rmse_tr, rmse_te, lambdas, degree)
+    
+    def cross_validation_demo(y, x, seed, degree, k_fold, step, lambdas):
+    # split data in k fold
+    k_indices = build_k_indices(y, k_fold, seed)
+    # define lists to store the loss of training data and test data
+    rmse_tr = []
+    rmse_te = []
+    # ***************************************************
+    # INSERT YOUR CODE HERE
+    rmse_tr = []
+    rmse_te = []
+    progress = step * k_fold
+    for ind, lambda_ in enumerate(lambdas):
+        # ridge regression
+        for k in range(4):
+            print("Progress: " + str(progress) + " / " + str(step * k_fold))
+            progress = progress - 1
+            [a,b] = cross_validation(y,x,k_indices,k,lambda_,degree)
+            rmse_tr.append(a)
+            rmse_te.append(b)
+    rmse_tr = np.asarray(rmse_tr).reshape(-1,4)
+    rmse_te = np.asarray(rmse_te).reshape(-1,4)
+    rmse_tr = np.mean(rmse_tr,axis=1)
+    rmse_te = np.mean(rmse_te,axis=1)
+    # cross validation: TODO
+    # ***************************************************   
+    cross_validation_visualization(lambdas,rmse_tr,rmse_te)
+
 
 # Computing Logistic Regression
 #######################################################
@@ -192,5 +242,27 @@ def learning_by_gradient_descent(y, tx, w, gamma):
     grad = compute_log_gradient(y, tx, w)
     w -= gamma * grad
     return loss, w
+
+def logistic_regression_gradient_descent_demo(y, tx, max_iter, threshold, gamma):
+    y = np.expand_dims(y, axis=1)
+    losses = []
+    w = np.zeros((tx.shape[1], 1))
+
+    # start the logistic regression
+    for iter in range(max_iter):
+        # get loss and update w.
+        loss, w = learning_by_gradient_descent(y, tx, w, gamma)     
+        # log info
+        if iter % (max_iter/5) == 0:
+            print("Current iteration={i}, loss={l}".format(i=iter, l=loss))       
+            pred = sigmoid(tx.dot(w)) 
+        # converge criterion
+        losses.append(loss)
+        if len(losses) > 1 and np.abs(losses[-1] - losses[-2]) < threshold:
+            break
+    # visualization
+    # visualization(y, x, mean_x, std_x, w, "classification_by_logistic_regression_gradient_descent")
+    print("loss={l}".format(l=compute_log_loss(y, tx, w)))
+    return w
 
 
