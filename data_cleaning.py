@@ -3,7 +3,7 @@ import numpy as np
 def clean_data(data):
     data = np.where(data==-999, np.nan, data)
 
-    col_mean = np.nanmean(data, axis=0)
+    col_mean = np.nanmedian(data, axis=0)
     
     #col_stddev = np.sqrt(np.nanvar(data, axis=0))
     #stat = np.vstack((col_mean, col_stddev))

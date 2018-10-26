@@ -1,5 +1,6 @@
 import numpy as np
 from proj1_helpers import batch_iter
+import datetime
 
 # Computing loss / MSE
 ######################################################
@@ -44,6 +45,18 @@ def gradient_descent(y, tx, initial_w, max_iters, gamma):
 
     return losses, ws
 
+def least_squares_GD(y, tx, initial_w, max_iters, gamma):
+    # Start gradient descent.
+    start_time = datetime.datetime.now()
+    gradient_losses, gradient_ws = gradient_descent(y, tx, initial_w, max_iters, gamma)
+    end_time = datetime.datetime.now()
+
+    # Print result
+    exection_time = (end_time - start_time).total_seconds()
+    print("Gradient Descent: execution time={t:.3f} seconds".format(t=exection_time))
+    
+    return (gradient_ws[-1], gradient_losses[-1])
+
 # Computing Stochastic Gradient Descent
 #######################################################
 
@@ -53,9 +66,7 @@ def compute_stoch_gradient(y, tx, w):
     grad = -tx.T.dot(err) / len(err)
     return grad, err
 
-
-def stochastic_gradient_descent(
-        y, tx, initial_w, batch_size, max_iters, gamma):
+def stochastic_gradient_descent(y, tx, initial_w, batch_size, max_iters, gamma):
     """Stochastic gradient descent."""
     # Define parameters to store w and loss
     ws = [initial_w]
@@ -78,6 +89,25 @@ def stochastic_gradient_descent(
               bi=n_iter, ti=max_iters - 1, l=loss))
     return losses, ws
 
+def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
+    # Define the parameters of the algorithm.
+    batch_size = 1
+
+    # Initialization
+    w_initial = np.zeros(tx.shape[1])
+
+    # Start SGD.
+    start_time = datetime.datetime.now()
+    sgd_losses, sgd_ws = stochastic_gradient_descent(y, tx, initial_w, batch_size, max_iters, gamma)
+    end_time = datetime.datetime.now()
+
+    # Print result
+    exection_time = (end_time - start_time).total_seconds()
+    print("SGD: execution time={t:.3f} seconds".format(t=exection_time))
+    
+    return (sgd_ws[-1], sgd_losses[-1])
+    
+
 # Computing Least Squares
 #######################################################
 
@@ -85,7 +115,11 @@ def least_squares(y, tx):
     """calculate the least squares solution."""
     a = tx.T.dot(tx)
     b = tx.T.dot(y)
-    return np.linalg.solve(a, b)
+    
+    w = np.linalg.solve(a, b)
+    loss = compute_loss(y, tx, w)
+    
+    return (w, loss)
 
 # Computing Ridge Regression
 #######################################################
@@ -119,4 +153,43 @@ def ridge_regression(y, tx, lambda_):
     aI = 2 * tx.shape[0] * lambda_ * np.identity(tx.shape[1])
     a = tx.T.dot(tx) + aI
     b = tx.T.dot(y)
-    return np.linalg.solve(a, b)
+    
+    w = np.linalg.solve(a, b)
+    loss = compute_loss(y, tx, w)
+    
+    return (w, loss)
+
+
+# Computing Logistic Regression
+#######################################################
+
+def sigmoid(t):
+    """apply sigmoid function on t."""
+
+    return 1.0 / (1 + np.exp(-t))
+
+def compute_log_loss(y, tx, w):
+    """compute the cost by negative log likelihood."""
+    pred = sigmoid(tx.dot(w))
+    #loss = y.T.dot(np.log(pred)) + (1 - y).T.dot(np.log(1 - pred))
+    loss = np.log(1+np.exp(pred))-np.multiply(y,pred) # y.dot(pred)
+    return np.sum(loss)
+
+def compute_log_gradient(y, tx, w):
+    """compute the gradient of loss."""
+
+    pred = sigmoid(tx.dot(w))
+    grad = tx.T.dot(pred - y)
+    return grad
+
+def learning_by_gradient_descent(y, tx, w, gamma):
+    """
+    Do one step of gradient descen using logistic regression.
+    Return the loss and the updated w.
+    """
+    loss = compute_log_loss(y, tx, w)
+    grad = compute_log_gradient(y, tx, w)
+    w -= gamma * grad
+    return loss, w
+
+
