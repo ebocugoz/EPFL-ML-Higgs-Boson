@@ -165,21 +165,22 @@ def ridge_regression(y, tx, lambda_):
 
 def sigmoid(t):
     """apply sigmoid function on t."""
-
     return 1.0 / (1 + np.exp(-t))
 
 def compute_log_loss(y, tx, w):
     """compute the cost by negative log likelihood."""
     pred = sigmoid(tx.dot(w))
     #loss = y.T.dot(np.log(pred)) + (1 - y).T.dot(np.log(1 - pred))
-    loss = np.log(1+np.exp(pred))-np.multiply(y,pred) # y.dot(pred)
-    return np.sum(loss)
+    #loss = np.log(1+np.exp(pred))-np.multiply(y,pred) # y.dot(pred)
+    #return np.sum(loss)
+
+    loss = y.T.dot(np.log(pred)) + (1 - y).T.dot(np.log(1 - pred))
+    return (-y * np.log(pred) - (1 - y) * np.log(1 - pred)).mean()
 
 def compute_log_gradient(y, tx, w):
     """compute the gradient of loss."""
-
     pred = sigmoid(tx.dot(w))
-    grad = tx.T.dot(pred - y)
+    grad = tx.T.dot(pred - y) / y.shape[0]
     return grad
 
 def learning_by_gradient_descent(y, tx, w, gamma):
