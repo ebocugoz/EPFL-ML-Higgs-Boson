@@ -152,10 +152,26 @@ def split_data(x, y, ratio, myseed=1):
     return x_tr, x_te, y_tr, y_te
 
 def build_poly(x, degree):
-    """polynomial basis functions for input data x, for j=0 up to j=degree."""
-    poly = np.ones((len(x), 1))
-    for deg in range(1, degree+1):
+    ones_col = np.ones((len(x), 1))
+    poly = x
+    m, n = x.shape
+    for deg in range(2, degree+1):
         poly = np.c_[poly, np.power(x, deg)]
+    multi_indices = {}
+    cpt = 0
+    for i in range (n):
+        for j in range(i+1,n):
+            multi_indices[cpt] = [i,j]
+            cpt = cpt+1
+    
+    gen_features = np.zeros(shape=(m, len(multi_indices)) )
+
+    for i, c in multi_indices.items():
+        gen_features[:, i] = np.multiply(x[:, c[0]],x[:, c[1]])
+
+    poly =  np.c_[poly,gen_features]
+    poly =  np.c_[ones_col,poly]
+
     return poly
 
 def ridge_regression(y, tx, lambda_, test = False):
@@ -198,7 +214,7 @@ def select_hyperparameter_for_ridge_regression(x, y, degree, ratio, seed, lambda
     ind_min = rmse_te.index(min(rmse_te))
     lambda_ = lambdas[ind_min]
     print("Hyperparameter Selection: Lambda = {t}".format(t=lambda_))
-    return lambda_
+    return lambda_ 
     
 # Computing Logistic Regression
 #######################################################
