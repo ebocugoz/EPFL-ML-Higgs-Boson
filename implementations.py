@@ -53,8 +53,8 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma):
 
     # Print result
     exection_time = (end_time - start_time).total_seconds()
-    print("Gradient Descent: execution time={t:.3f} seconds".format(t=exection_time))
-    print("Gradient Descent: RMSE Loss ={t}".format(t=np.sqrt(2 * gradient_losses[-1])))
+    print("Gradient Descent: execution time= {t:.3f} seconds".format(t=exection_time))
+    print("Gradient Descent: RMSE Loss = {t}".format(t=np.sqrt(2 * gradient_losses[-1])))
     
     return (gradient_ws[-1], gradient_losses[-1])
 
@@ -104,8 +104,8 @@ def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
 
     # Print result
     exection_time = (end_time - start_time).total_seconds()
-    print("Stochastic Gradient Descent: execution time={t:.3f} seconds".format(t=exection_time))
-    print("Stochastic Gradient Descent: RMSE Loss ={t}".format(t=np.sqrt(2 * sgd_losses[-1])))
+    print("Stochastic Gradient Descent: execution time= {t:.3f} seconds".format(t=exection_time))
+    print("Stochastic Gradient Descent: RMSE Loss = {t}".format(t=np.sqrt(2 * sgd_losses[-1])))
     
     return (sgd_ws[-1], sgd_losses[-1])
     
@@ -126,8 +126,8 @@ def least_squares(y, tx):
     
     # Print result
     exection_time = (end_time - start_time).total_seconds()
-    print("Least Squares: execution time={t:.3f} seconds".format(t=exection_time))
-    print("Least Squares: RMSE Loss ={t}".format(t=np.sqrt(2 * loss)))
+    print("Least Squares: execution time= {t:.3f} seconds".format(t=exection_time))
+    print("Least Squares: RMSE Loss = {t}".format(t=np.sqrt(2 * loss)))
     
     return (w, loss)
 
@@ -169,7 +169,7 @@ def ridge_regression(y, tx, lambda_, test = False):
     
     # Print result
     if not test:
-        print("Ridge Regression: RMSE Loss ={t}".format(t=np.sqrt(2 * loss)))
+        print("Ridge Regression: RMSE Loss = {t}".format(t=np.sqrt(2 * loss)))
     
     return (w, loss)
 
@@ -197,7 +197,7 @@ def select_hyperparameter_for_ridge_regression(x, y, degree, ratio, seed, lambda
     
     ind_min = rmse_te.index(min(rmse_te))
     lambda_ = lambdas[ind_min]
-    print("Hyperparameter Selection: Lambda ={t}".format(t=lambda_))
+    print("Hyperparameter Selection: Lambda = {t}".format(t=lambda_))
     return lambda_
     
 # Computing Logistic Regression
@@ -233,7 +233,7 @@ def learning_by_gradient_descent(y, tx, w, gamma):
     w -= gamma * grad
     return loss, w
 
-def logistic_regression_gradient_descent_demo(y, tx, max_iter, gamma):
+def logistic_regression(y, tx, max_iter, gamma):
     y = np.expand_dims(y, axis=1)
     losses = []
     w = np.zeros((tx.shape[1], 1))
@@ -244,7 +244,7 @@ def logistic_regression_gradient_descent_demo(y, tx, max_iter, gamma):
         loss, w = learning_by_gradient_descent(y, tx, w, gamma)     
         # log info
         if iter % (max_iter/100) == 0:
-            print("Current iteration={i}, loss={l}".format(i=iter, l=loss), end="\r")
+            print("Current iteration={i}, loss= {l}".format(i=iter, l=loss), end="\r")
             pred = sigmoid(tx.dot(w)) 
         # converge criterion
         losses.append(loss)
@@ -252,11 +252,12 @@ def logistic_regression_gradient_descent_demo(y, tx, max_iter, gamma):
     # visualization(y, x, mean_x, std_x, w, "classification_by_logistic_regression_gradient_descent")
 
     loss = compute_log_loss(y, tx, w)
-    print("Regularized Logistic Regression: Loss={l}".format(l=loss))
+    print("Regularized Logistic Regression: Loss= {l}".format(l=loss))
     return (w, loss)
 
 # Computing Regularized Logistic Regression
 #######################################################
+
 def penalized_logistic_regression(y, tx, w, lambda_):
     """return the loss and gradient."""
     num_samples = y.shape[0]
@@ -284,14 +285,14 @@ def reg_logistic_regression(y, tx, lambda_,max_iter, gamma):
         loss, w = learning_by_penalized_gradient(y, tx, w, gamma, lambda_)
         # log info
         if iter % (max_iter/100) == 0:
-            print("Current iteration={i}, loss={l}".format(i=iter, l=loss), end="\r")
+            print("Current iteration={i}, loss= {l}".format(i=iter, l=loss), end="\r")
         # converge criterion
         losses.append(loss)
     # visualization
     # visualization(y, x, mean_x, std_x, w, "classification_by_logistic_regression_penalized_gradient_descent")
     
     loss = compute_log_loss(y, tx, w)
-    print("Regularized Logistic Regression: Loss={l}".format(l=loss))
+    print("Regularized Logistic Regression: Loss= {l}".format(l=loss))
     return (w, loss)
 
 
@@ -360,6 +361,6 @@ def select_hyperparameter_with_cross_validation(y, x, seed, degree, k_fold, step
     ind_min = np.argmin(rmse_te)
     lambda_ = lambdas[ind_min]
     
-    print("Hyperparameter Selection: Lambda ={t}".format(t=lambda_))
+    print("Hyperparameter Selection: Lambda = {t}".format(t=lambda_))
     return lambda_
 
