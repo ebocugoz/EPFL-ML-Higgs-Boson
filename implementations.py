@@ -4,6 +4,7 @@ import datetime
 
 # Computing loss / MSE
 ######################################################
+
 def calculate_mse(e):
     """Calculate the mse for vector e."""
     return 1/2*np.mean(e**2)
@@ -199,9 +200,6 @@ def select_hyperparameter_for_ridge_regression(x, y, degree, ratio, seed, lambda
     print("Hyperparameter Selection: Lambda ={t}".format(t=lambda_))
     return lambda_
     
-
-
-
 # Computing Logistic Regression
 #######################################################
 
@@ -235,7 +233,7 @@ def learning_by_gradient_descent(y, tx, w, gamma):
     w -= gamma * grad
     return loss, w
 
-def logistic_regression_gradient_descent_demo(y, tx, max_iter, threshold, gamma):
+def logistic_regression_gradient_descent_demo(y, tx, max_iter, gamma):
     y = np.expand_dims(y, axis=1)
     losses = []
     w = np.zeros((tx.shape[1], 1))
@@ -250,12 +248,52 @@ def logistic_regression_gradient_descent_demo(y, tx, max_iter, threshold, gamma)
             pred = sigmoid(tx.dot(w)) 
         # converge criterion
         losses.append(loss)
-        if len(losses) > 1 and np.abs(losses[-1] - losses[-2]) < threshold:
-            break
     # visualization
     # visualization(y, x, mean_x, std_x, w, "classification_by_logistic_regression_gradient_descent")
-    print("loss={l}".format(l=compute_log_loss(y, tx, w)))
-    return w
+
+    loss = compute_log_loss(y, tx, w)
+    print("Regularized Logistic Regression: Loss={l}".format(l=loss))
+    return (w, loss)
+
+# Computing Regularized Logistic Regression
+#######################################################
+def penalized_logistic_regression(y, tx, w, lambda_):
+    """return the loss and gradient."""
+    num_samples = y.shape[0]
+    loss = compute_log_loss(y, tx, w) + lambda_ * np.squeeze(w.T.dot(w))
+    gradient = compute_log_gradient(y, tx, w) + 2 * lambda_ * w
+    return loss, gradient
+
+def learning_by_penalized_gradient(y, tx, w, gamma, lambda_):
+    """
+    Do one step of gradient descent, using the penalized logistic regression.
+    Return the loss and updated w.
+    """
+    loss, gradient = penalized_logistic_regression(y, tx, w, lambda_)
+    w -= gamma * gradient
+    return loss, w
+
+def reg_logistic_regression(y, tx, lambda_,max_iter, gamma):
+    y = np.expand_dims(y, axis=1)
+    losses = []
+    w = np.zeros((tx.shape[1], 1))
+
+    # start the logistic regression
+    for iter in range(max_iter):
+        # get loss and update w.
+        loss, w = learning_by_penalized_gradient(y, tx, w, gamma, lambda_)
+        # log info
+        if iter % (max_iter/100) == 0:
+            print("Current iteration={i}, loss={l}".format(i=iter, l=loss), end="\r")
+        # converge criterion
+        losses.append(loss)
+    # visualization
+    # visualization(y, x, mean_x, std_x, w, "classification_by_logistic_regression_penalized_gradient_descent")
+    
+    loss = compute_log_loss(y, tx, w)
+    print("Regularized Logistic Regression: Loss={l}".format(l=loss))
+    return (w, loss)
+
 
 # Computing Cross Validation
 #######################################################
