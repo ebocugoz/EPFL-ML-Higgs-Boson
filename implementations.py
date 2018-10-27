@@ -1,5 +1,5 @@
 import numpy as np
-from proj1_helpers import batch_iter
+from helpers import *
 import datetime
 
 # Computing loss / MSE
@@ -40,8 +40,7 @@ def gradient_descent(y, tx, initial_w, max_iters, gamma):
         # store w and loss
         ws.append(w)
         losses.append(loss)
-        print("Gradient Descent({bi}/{ti}): loss={l}".format(
-              bi=n_iter, ti=max_iters - 1, l=loss))
+        # print("Gradient Descent({bi}/{ti}): loss={l}".format(bi=n_iter, ti=max_iters - 1, l=loss))
 
     return losses, ws
 
@@ -54,6 +53,7 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma):
     # Print result
     exection_time = (end_time - start_time).total_seconds()
     print("Gradient Descent: execution time={t:.3f} seconds".format(t=exection_time))
+    print("Gradient Descent: RMSE Loss ={t}".format(t=np.sqrt(2 * gradient_losses[-1])))
     
     return (gradient_ws[-1], gradient_losses[-1])
 
@@ -85,8 +85,8 @@ def stochastic_gradient_descent(y, tx, initial_w, batch_size, max_iters, gamma):
             ws.append(w)
             losses.append(loss)
 
-        print("SGD({bi}/{ti}): loss={l}".format(
-              bi=n_iter, ti=max_iters - 1, l=loss))
+        #print("SGD({bi}/{ti}): loss={l}".format(bi=n_iter, ti=max_iters - 1, l=loss))
+    
     return losses, ws
 
 def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
@@ -103,7 +103,8 @@ def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
 
     # Print result
     exection_time = (end_time - start_time).total_seconds()
-    print("SGD: execution time={t:.3f} seconds".format(t=exection_time))
+    print("Stochastic Gradient Descent: execution time={t:.3f} seconds".format(t=exection_time))
+    print("Stochastic Gradient Descent: RMSE Loss ={t}".format(t=np.sqrt(2 * sgd_losses[-1])))
     
     return (sgd_ws[-1], sgd_losses[-1])
     
@@ -113,11 +114,19 @@ def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
 
 def least_squares(y, tx):
     """calculate the least squares solution."""
+    
+    start_time = datetime.datetime.now()
     a = tx.T.dot(tx)
     b = tx.T.dot(y)
     
     w = np.linalg.solve(a, b)
     loss = compute_loss(y, tx, w)
+    end_time = datetime.datetime.now()
+    
+    # Print result
+    exection_time = (end_time - start_time).total_seconds()
+    print("Least Squares: execution time={t:.3f} seconds".format(t=exection_time))
+    print("Least Squares: RMSE Loss ={t}".format(t=np.sqrt(2 * loss)))
     
     return (w, loss)
 
@@ -148,7 +157,7 @@ def build_poly(x, degree):
         poly = np.c_[poly, np.power(x, deg)]
     return poly
 
-def ridge_regression(y, tx, lambda_):
+def ridge_regression(y, tx, lambda_, test = False):
     """implement ridge regression."""
     aI = 2 * tx.shape[0] * lambda_ * np.identity(tx.shape[1])
     a = tx.T.dot(tx) + aI
@@ -157,12 +166,16 @@ def ridge_regression(y, tx, lambda_):
     w = np.linalg.solve(a, b)
     loss = compute_loss(y, tx, w)
     
+    # Print result
+    if not test:
+        print("Ridge Regression: RMSE Loss ={t}".format(t=np.sqrt(2 * loss)))
+    
     return (w, loss)
 
-def ridge_regression_demo(x, y, degree, ratio, seed):
+def select_hyperparameter_for_ridge_regression(x, y, degree, ratio, seed, lambdas):
     """ridge regression demo."""
-    # define parameter
-    lambdas = np.logspace(-10, 0, 50)
+    print("Selecting Hyperparameter By Splitting the Data...")
+
     # split data
     x_tr, x_te, y_tr, y_te = split_data(x, y, ratio, seed)
     # form tx
@@ -174,40 +187,19 @@ def ridge_regression_demo(x, y, degree, ratio, seed):
     rmse_te = []
     for ind, lambda_ in enumerate(lambdas):
         # ridge regression
-        weight, loss = ridge_regression(y_tr, tx_tr, lambda_)
+        weight, loss = ridge_regression(y_tr, tx_tr, lambda_, test = True)
         rmse_tr.append(np.sqrt(2 * compute_loss(y_tr, tx_tr, weight)))
         rmse_te.append(np.sqrt(2 * compute_loss(y_te, tx_te, weight)))
 
-        print("proportion={p}, degree={d}, lambda={l:.3f}, Training RMSE={tr:.3f}, Testing RMSE={te:.3f}".format(
-               p=ratio, d=degree, l=lambda_, tr=rmse_tr[ind], te=rmse_te[ind]))
+        # print("proportion={p}, degree={d}, lambda={l:.3f}, Training RMSE={tr:.3f}, Testing RMSE={te:.3f}".format(p=ratio, d=degree, l=lambda_, tr=rmse_tr[ind], te=rmse_te[ind]))
     plot_train_test(rmse_tr, rmse_te, lambdas, degree)
     
-    def cross_validation_demo(y, x, seed, degree, k_fold, step, lambdas):
-    # split data in k fold
-    k_indices = build_k_indices(y, k_fold, seed)
-    # define lists to store the loss of training data and test data
-    rmse_tr = []
-    rmse_te = []
-    # ***************************************************
-    # INSERT YOUR CODE HERE
-    rmse_tr = []
-    rmse_te = []
-    progress = step * k_fold
-    for ind, lambda_ in enumerate(lambdas):
-        # ridge regression
-        for k in range(4):
-            print("Progress: " + str(progress) + " / " + str(step * k_fold))
-            progress = progress - 1
-            [a,b] = cross_validation(y,x,k_indices,k,lambda_,degree)
-            rmse_tr.append(a)
-            rmse_te.append(b)
-    rmse_tr = np.asarray(rmse_tr).reshape(-1,4)
-    rmse_te = np.asarray(rmse_te).reshape(-1,4)
-    rmse_tr = np.mean(rmse_tr,axis=1)
-    rmse_te = np.mean(rmse_te,axis=1)
-    # cross validation: TODO
-    # ***************************************************   
-    cross_validation_visualization(lambdas,rmse_tr,rmse_te)
+    ind_min = rmse_te.index(min(rmse_te))
+    lambda_ = lambdas[ind_min]
+    print("Hyperparameter Selection: Lambda ={t}".format(t=lambda_))
+    return lambda_
+    
+
 
 
 # Computing Logistic Regression
@@ -253,8 +245,8 @@ def logistic_regression_gradient_descent_demo(y, tx, max_iter, threshold, gamma)
         # get loss and update w.
         loss, w = learning_by_gradient_descent(y, tx, w, gamma)     
         # log info
-        if iter % (max_iter/5) == 0:
-            print("Current iteration={i}, loss={l}".format(i=iter, l=loss))       
+        if iter % (max_iter/100) == 0:
+            print("Current iteration={i}, loss={l}".format(i=iter, l=loss), end="\r")
             pred = sigmoid(tx.dot(w)) 
         # converge criterion
         losses.append(loss)
@@ -265,4 +257,71 @@ def logistic_regression_gradient_descent_demo(y, tx, max_iter, threshold, gamma)
     print("loss={l}".format(l=compute_log_loss(y, tx, w)))
     return w
 
+# Computing Cross Validation
+#######################################################
+
+def build_k_indices(y, k_fold, seed):
+    """build k indices for k-fold."""
+    num_row = y.shape[0]
+    interval = int(num_row / k_fold)
+    np.random.seed(seed)
+    indices = np.random.permutation(num_row)
+    k_indices = [indices[k * interval: (k + 1) * interval] for k in range(k_fold)]
+    return np.array(k_indices)
+
+def cross_validation(y, x, k_indices, k, lambda_, degree):
+    """return the loss of ridge regression."""
+    
+    # get k'th subgroup in test, others in train
+    x_test = x[k_indices[k].ravel()]
+    x_train = x[k_indices[np.arange(len(k_indices))!=k].ravel()]
+                            
+    y_test = y[k_indices[k].ravel()]
+    y_train = y[k_indices[np.arange(len(k_indices))!=k].ravel()]
+    
+    # form data with polynomial degree:
+    poly_test = build_poly(x_test,degree)
+    poly_train = build_poly(x_train,degree)
+
+    # ridge regression:
+    weights, loss = ridge_regression(y_train, poly_train, lambda_, test = True)
+    
+    # calculate the loss for train and test data:
+    rmse_tr = (np.sqrt(2 * compute_loss(y_train, poly_train, weights)))
+    rmse_te = (np.sqrt(2 * compute_loss(y_test, poly_test, weights)))
+    
+    return rmse_tr, rmse_te
+
+def select_hyperparameter_with_cross_validation(y, x, seed, degree, k_fold, step, lambdas):
+    print("Selecting Hyperparameter By Using {k}-fold Cross Validation...".format(k = k_fold))
+    # split data in k fold
+    k_indices = build_k_indices(y, k_fold, seed)
+    
+    # define lists to store the loss of training data and test data
+    rmse_tr = []
+    rmse_te = []
+    total_iter = step * k_fold
+    curr_iter = 0
+    for ind, lambda_ in enumerate(lambdas):
+        # ridge regression
+        for k in range(4):
+            if curr_iter % (total_iter/50) == 0: 
+                print("Progress: %" + str(curr_iter * 100 / total_iter), end="\r")
+            curr_iter = curr_iter + 1
+            [a,b] = cross_validation(y,x,k_indices,k,lambda_,degree)
+            rmse_tr.append(a)
+            rmse_te.append(b)
+    rmse_tr = np.asarray(rmse_tr).reshape(-1,4)
+    rmse_te = np.asarray(rmse_te).reshape(-1,4)
+    rmse_tr = np.mean(rmse_tr,axis=1)
+    rmse_te = np.mean(rmse_te,axis=1)
+    
+    # cross validation visualization:
+    cross_validation_visualization(lambdas,rmse_tr,rmse_te)
+    
+    ind_min = np.argmin(rmse_te)
+    lambda_ = lambdas[ind_min]
+    
+    print("Hyperparameter Selection: Lambda ={t}".format(t=lambda_))
+    return lambda_
 
