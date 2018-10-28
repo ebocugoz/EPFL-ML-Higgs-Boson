@@ -226,12 +226,14 @@ def sigmoid(t):
 def compute_log_loss(y, tx, w):
     """compute the cost by negative log likelihood."""
     pred = sigmoid(tx.dot(w))
-    #loss = y.T.dot(np.log(pred)) + (1 - y).T.dot(np.log(1 - pred))
-    #loss = np.log(1+np.exp(pred))-np.multiply(y,pred) # y.dot(pred)
-    #return np.sum(loss)
+ 
+    eps = 1e-323
+    pred[pred < eps] = eps   
+    oneMinusPred = 1 - pred
+    oneMinusPred[oneMinusPred < eps] = eps
 
-    loss = y.T.dot(np.log(pred)) + (1 - y).T.dot(np.log(1 - pred))
-    return (-y * np.log(pred) - (1 - y) * np.log(1 - pred)).mean()
+    loss = y.T.dot(np.log(pred)) + (1 - y).T.dot(np.log(oneMinusPred))
+    return (-y * np.log(pred) - (1 - y) * np.log(oneMinusPred)).mean()
 
 def compute_log_gradient(y, tx, w):
     """compute the gradient of loss."""
@@ -268,7 +270,9 @@ def logistic_regression(y, tx, max_iter, gamma):
     # visualization(y, x, mean_x, std_x, w, "classification_by_logistic_regression_gradient_descent")
 
     loss = compute_log_loss(y, tx, w)
-    print("Regularized Logistic Regression: Loss= {l}".format(l=loss))
+    print("Logistic Regression: Loss= {l}".format(l=loss))
+    
+    y = np.squeeze(y)
     return (w, loss)
 
 # Computing Regularized Logistic Regression
@@ -309,6 +313,8 @@ def reg_logistic_regression(y, tx, lambda_,max_iter, gamma):
     
     loss = compute_log_loss(y, tx, w)
     print("Regularized Logistic Regression: Loss= {l}".format(l=loss))
+    
+    y = np.squeeze(y)
     return (w, loss)
 
 
