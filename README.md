@@ -1,6 +1,11 @@
 # MLProject1 - Higgs Boson
 Machine Learning Project 1
 
+### Team Mmbers
+
+Asli Yorusun: asli.yorusun@epfl.ch
+Erdem Bocugoz: erdem.bocugoz@epfl.ch
+Serif Soner Serbest: serif.serbest@epfl.ch
 
 ### Aim :
 In this project we predict CERNs simulated particle collision events as either a Higgs Boson signal or background noise as of binary classification, which is a Kaggle 
