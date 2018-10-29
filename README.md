@@ -52,7 +52,4 @@ labels = decategorize_prediction(row_size, label1, label2, label3, indices1, ind
 ###### Create submission file
 create_csv_submission(test_id_,labels,"submission.csv")
 
-### Team Members:
-If 
-
 
