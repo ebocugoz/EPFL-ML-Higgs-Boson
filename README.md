@@ -4,7 +4,9 @@ Machine Learning Project 1
 ### Team Mmbers
 
 Asli Yorusun: asli.yorusun@epfl.ch
+
 Erdem Bocugoz: erdem.bocugoz@epfl.ch
+
 Serif Soner Serbest: serif.serbest@epfl.ch
 
 ### Aim :
