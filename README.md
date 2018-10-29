@@ -1,7 +1,7 @@
 # MLProject1 - Higgs Boson
 Machine Learning Project 1
 
-### Team Mmbers
+### Team Members
 
 Asli Yorusun: asli.yorusun@epfl.ch
 
