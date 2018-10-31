@@ -151,7 +151,7 @@ def split_data(x, y, ratio, myseed=1):
     y_te = y[index_te]
     return x_tr, x_te, y_tr, y_te
 
-def build_poly(x, degree):
+def build_poly(x, degree,onlyMulti = False):
     ones_col = np.ones((len(x), 1))
     poly = x
     m, n = x.shape
@@ -171,6 +171,10 @@ def build_poly(x, degree):
 
     poly =  np.c_[poly,gen_features]
     poly =  np.c_[ones_col,poly]
+
+    if onlyMulti == True :
+        poly =  np.c_[ones_col,x]
+        poly =  np.c_[poly,gen_features]
 
     return poly
 
@@ -221,17 +225,40 @@ def select_hyperparameter_for_ridge_regression(x, y, degree, ratio, seed, lambda
 
 def sigmoid(t):
     """apply sigmoid function on t."""
+   
     return 1.0 / (1 + np.exp(-t))
+
+def sigmoid_test(t):
+    """apply sigmoid function on t."""
+    print(np.exp(-t))
+    pred  =1.0 / (1 + np.exp(-t))
+    
+    
+    return pred
 
 def compute_log_loss(y, tx, w):
     """compute the cost by negative log likelihood."""
-    pred = sigmoid(tx.dot(w))
+    #pred = sigmoid(tx.dot(w))
+    #sigmoid_test(tx.dot(w))
     #loss = y.T.dot(np.log(pred)) + (1 - y).T.dot(np.log(1 - pred))
     #loss = np.log(1+np.exp(pred))-np.multiply(y,pred) # y.dot(pred)
     #return np.sum(loss)
 
-    loss = y.T.dot(np.log(pred)) + (1 - y).T.dot(np.log(1 - pred))
-    return (-y * np.log(pred) - (1 - y) * np.log(1 - pred)).mean()
+    #loss = y.T.dot(np.log(pred)) + (1 - y).T.dot(np.log(1 - pred+1e-5))
+    #return (-y * np.log(pred+1e-5) - (1 - y) * np.log(1 - pred+1e-5)).mean()
+
+    pred = sigmoid(tx.dot(w))
+    
+    
+    eps = 1e-323
+    pred[pred < eps] = eps
+    
+    oneMinusPred = 1 - pred
+    
+    oneMinusPred[oneMinusPred < eps] = eps
+
+    loss = y.T.dot(np.log(pred)) + (1 - y).T.dot(np.log(oneMinusPred))
+    return (-y * np.log(pred) - (1 - y) * np.log(oneMinusPred)).mean()
 
 def compute_log_gradient(y, tx, w):
     """compute the gradient of loss."""
@@ -252,7 +279,7 @@ def learning_by_gradient_descent(y, tx, w, gamma):
 def logistic_regression(y, tx, max_iter, gamma):
     y = np.expand_dims(y, axis=1)
     losses = []
-    w = np.zeros((tx.shape[1], 1))
+    w = np.ones((tx.shape[1], 1))
 
     # start the logistic regression
     for iter in range(max_iter):
@@ -293,7 +320,7 @@ def learning_by_penalized_gradient(y, tx, w, gamma, lambda_):
 def reg_logistic_regression(y, tx, lambda_,max_iter, gamma):
     y = np.expand_dims(y, axis=1)
     losses = []
-    w = np.zeros((tx.shape[1], 1))
+    w = np.ones((tx.shape[1], 1))
 
     # start the logistic regression
     for iter in range(max_iter):

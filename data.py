@@ -54,9 +54,37 @@ def standardize(x):
     mean_x = np.mean(x, axis=0)
     x = x - mean_x
     std_x = np.std(x, axis=0)
-    x = x / std_x
+    x[:, std_x > 0] = x[:, std_x > 0] / std_x[std_x > 0]
     return x, mean_x, std_x
+def normalize(x):
+    """Standardize the original data set."""
+    min_x = np.min(x, axis=0)
+   
+    max_x = np.max(x, axis=0)
+    mindiff = x-min_x
+    diff = max_x-min_x
 
+    x[:, diff > 0]  = mindiff[:, diff > 0]/diff[ diff > 0]
+    return x
+def impute_data(x_train):
+    """ Replace missing values (NA) by the most frequent value of the column. """
+    for i in range(x_train.shape[1]):
+        # If NA values in column
+        if na(x_train[:, i]):
+            msk_train = (x_train[:, i] != -999.)
+            # Replace NA values with most frequent value
+            values, counts = np.unique(x_train[msk_train, i], return_counts=True)
+            # If there are values different from NA
+            if (len(values) > 1):
+                x_train[~msk_train, i] = values[np.argmax(counts)]
+            else:
+                x_train[~msk_train, i] = 0
+
+    return x_train
+
+def na(x):
+    """ Identifies missing values. """
+    return np.any(x == -999)
 def process_data(data):
     data = log_transform_data(data)
     data = clean_data(data)
