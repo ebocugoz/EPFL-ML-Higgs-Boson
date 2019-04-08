@@ -14,7 +14,7 @@ In this project we predict CERNs simulated particle collision events as either a
 
 
 ### Result:
-We ranked 34th in Kaggle LeaderBoard among 211 teams,with our score: 0.83224.
+We ranked 28th in Kaggle LeaderBoard among 211 teams,with our score: 0.83224.
 
 
 ### Run
